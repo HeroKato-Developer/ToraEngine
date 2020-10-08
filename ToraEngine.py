@@ -59,15 +59,11 @@ class ToraEngine:
         for pair in self.pairs:
             candle = self.datareader.readnext(self.datecurrent, pair)
 
-            if candle is None:
-                continue
-
             for consolidator in self.consolidators[pair]:
                 consolidator.addcandle(candle)
 
+        self.datecurrent += datetime.timedelta(0, 60)
 
-
-        self.datecurrent += datetime.timedelta(0,60)
 
 # creo engine
 Engine = ToraEngine()

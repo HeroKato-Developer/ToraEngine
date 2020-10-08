@@ -1,3 +1,4 @@
+from Candle import Candle
 from TimeFrame import TimeFrame
 
 
@@ -11,7 +12,7 @@ class Algorithm:
         print(f'Im an Algo!')
 
         self.engine.setcomputingdates('2019/08/02', '2020/01/02')
-        self.engine.addconsolidator('EURUSD', TimeFrame.M1, self.onconsolidate)
+        self.engine.addconsolidator('EURUSD', TimeFrame.M15, self.onconsolidate)
 
-    def onconsolidate(self):
-        print('Event On Consolidate')
+    def onconsolidate(self, candle: Candle):
+        print(f'Event On Consolidate - {candle.tostring()}')

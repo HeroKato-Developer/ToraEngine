@@ -64,9 +64,11 @@ class DataReader:
     def readnext(self, date: datetime, pair: str):
         if date not in self.data[pair]:
             print(f'Void Candle - Date {date} does NOT exist in {pair}')
-            return None
+            candle = Candle()
+            candle.date = date
+            return candle
 
-        #recupero la candela
+        # recupero la candela
         return self.data[pair][date]
 
     def generatepath(self, datecurrent: datetime, path: str):
@@ -104,13 +106,14 @@ class DataReader:
         size = (Decimal(row[5]) + Decimal(row[10])) * Decimal('0.5')
 
         date = datecurrent + datetime.timedelta(0, 0, 0, milliseconds)
-        #datestr = date.strftime('%Y-%m-%d %H:%M:%S')
+        # datestr = date.strftime('%Y-%m-%d %H:%M:%S')
 
         candle = Candle()
         candle.set(date, open, high, low, close, size)
 
-        #return candle to be added to history
+        # return candle to be added to history
         return candle
+
 
 '''
         # Imports
