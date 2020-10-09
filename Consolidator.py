@@ -9,7 +9,6 @@ class Consolidator:
         self.callback = callback
 
         self.candleserie = []
-        self.candlecount = 0
 
     def addcandle(self, candle: Candle):
 
@@ -25,8 +24,12 @@ class Consolidator:
             conscandle = Candle()
             conscandle.consolidate(self.candleserie, self.tf)
 
-            #chiamo evento consolidate
-            self.callback(conscandle)
+            # chiamo il callback solo se è valida la candela
+            if conscandle.isvalid():
+                self.callback(conscandle)
+
+            # cancello serie candele
+            self.candleserie = []
 
     def processcandle(self):
         pass

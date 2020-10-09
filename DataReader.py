@@ -54,16 +54,16 @@ class DataReader:
                     self.loadminutes(csv_parsed, pair, datecurrent)
 
         except FileNotFoundError:
-            pass
             # print(f'File Non Esistente - {file}')
+            pass
 
         except BadZipFile:
-            pass
             # print(f'Zip Errore, impossibile aprire')
+            pass
 
     def readnext(self, date: datetime, pair: str):
         if date not in self.data[pair]:
-            print(f'Void Candle - Date {date} does NOT exist in {pair}')
+            # print(f'Void Candle - Date {date} does NOT exist in {pair}')
             candle = Candle()
             candle.date = date
             return candle
@@ -81,10 +81,10 @@ class DataReader:
                 self.data.setdefault(pair, {})
                 self.data[pair].setdefault(datecurrent, None)
 
-            candle = self.loadcandle(row, datecurrent)
+            candle = self.loadcandle(row, pair, datecurrent)
             self.data[pair][candle.date] = candle
 
-    def loadcandle(self, row, datecurrent: datetime):
+    def loadcandle(self, row, pair: str, datecurrent: datetime):
 
         # found in fxcm folder!
         # | Time | Bid Open | Bid High | Bid Low | Bid Close | Last Bid Size | Ask Open | Ask High | Ask Low | Ask Close | Last Ask Size |
@@ -109,7 +109,7 @@ class DataReader:
         # datestr = date.strftime('%Y-%m-%d %H:%M:%S')
 
         candle = Candle()
-        candle.set(date, open, high, low, close, size)
+        candle.set(pair, date, open, high, low, close, size)
 
         # return candle to be added to history
         return candle

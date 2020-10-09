@@ -1,4 +1,7 @@
 import datetime
+
+import Candle
+import TimeFrame
 import Utilities
 from Algorithm import Algorithm
 from Consolidator import Consolidator
@@ -12,7 +15,7 @@ class ToraEngine:
         self.ready = False
 
         self.datareader = None
-        self.history = []
+        self.history = {}
         self.consolidators = {}
         self.algorithm = None
         self.pairs = []
@@ -34,6 +37,7 @@ class ToraEngine:
 
         if pair not in self.pairs:
             self.pairs.append(pair)
+            self.addrollingwindow(pair)
 
         if len(self.consolidators) == 0:
             self.consolidators.setdefault(pair, [])
@@ -63,6 +67,24 @@ class ToraEngine:
                 consolidator.addcandle(candle)
 
         self.datecurrent += datetime.timedelta(0, 60)
+
+    def addtohistory(self, candle: Candle):
+
+        # verifico se esiste il pair
+        if candle.pair not in self.history:
+            self.history.setdefault(candle.pair, {})
+
+        # verifico se esiste il tf
+        if candle.tf not in self.history[candle.pair]:
+            self.history[candle.pair].setdefault(candle.tf, [])
+
+        # aggiungo candela alla history
+        self.history[candle.pair][candle.tf].insert(0, candle)
+
+    def addrollingwindow(self, pair):
+
+        for tf in TimeFrame.TimeFrame:
+            self.addconsolidator(pair, tf, self.addtohistory)
 
 
 # creo engine
