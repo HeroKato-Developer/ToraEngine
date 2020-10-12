@@ -65,6 +65,7 @@ class DataReader:
         if date not in self.data[pair]:
             # print(f'Void Candle - Date {date} does NOT exist in {pair}')
             candle = Candle()
+            candle.pair = pair
             candle.date = date
             return candle
 

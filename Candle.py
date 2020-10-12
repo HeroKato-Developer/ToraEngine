@@ -38,6 +38,7 @@ class Candle:
         self.high = 0
         self.low = 0
         self.close = 0
+        self.size = 0
 
         # first pass per settare valori high low e open
         for candle in serie:
@@ -63,6 +64,9 @@ class Candle:
 
             if candle.low < self.low:
                 self.low = candle.low
+
+            # aggiungo size della candela
+            self.size += candle.size
 
     def checkiflist(self, candles):
         if type(candles) is list:

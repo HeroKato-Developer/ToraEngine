@@ -1,12 +1,11 @@
 import datetime
-
-import Candle
-import TimeFrame
 import Utilities
 from Algorithm import Algorithm
+from Candle import Candle
 from Consolidator import Consolidator
-from DataReader import DataReader
 from DataReaderFxcm import DataReaderFxcm
+from Signal import Signal
+from TimeFrame import TimeFrame
 
 
 class ToraEngine:
@@ -17,6 +16,7 @@ class ToraEngine:
         self.datareader = None
         self.history = {}
         self.consolidators = {}
+        self.signals = []
         self.algorithm = None
         self.pairs = []
 
@@ -44,30 +44,6 @@ class ToraEngine:
 
         self.consolidators[pair].append(Consolidator(pair, timeframe, callback))
 
-    def setcomputingdates(self, start: datetime, end: datetime):
-        self.datestart = Utilities.stringtotime(start)
-        self.dateend = Utilities.stringtotime(end)
-        self.datecurrent = self.datestart
-
-        print(
-            f'Set Start Date: {start} - Year: {self.datestart.year} - Month: {self.datestart.month} - Day: {self.datestart.day}\nSet End Date: {end} - Year: {self.dateend.year} - Month: {self.dateend.month} - Day: {self.dateend.day}')
-
-    def run(self):
-        # carico tutte le candele ?
-        self.datareader.loadhistory(self.consolidators, self.datestart, self.dateend)
-
-        while self.datecurrent < self.dateend:
-            self.consolidate()
-
-    def consolidate(self):
-        for pair in self.pairs:
-            candle = self.datareader.readnext(self.datecurrent, pair)
-
-            for consolidator in self.consolidators[pair]:
-                consolidator.addcandle(candle)
-
-        self.datecurrent += datetime.timedelta(0, 60)
-
     def addtohistory(self, candle: Candle):
 
         # verifico se esiste il pair
@@ -83,20 +59,38 @@ class ToraEngine:
 
     def addrollingwindow(self, pair):
 
-        for tf in TimeFrame.TimeFrame:
+        for tf in TimeFrame:
             self.addconsolidator(pair, tf, self.addtohistory)
 
+    def addsignal(self, signal: Signal):
+        self.signals.append(signal)
 
-# creo engine
-Engine = ToraEngine()
+    def setcomputingdates(self, start: datetime, end: datetime):
+        self.datestart = Utilities.stringtotime(start)
+        self.dateend = Utilities.stringtotime(end)
+        self.datecurrent = self.datestart
 
-# aggiungo algoritmo
-Engine.addalgorithm(Algorithm)
+        print(
+            f'Set Start Date: {start} - Year: {self.datestart.year} - Month: {self.datestart.month} - Day: {self.datestart.day}\nSet End Date: {end} - Year: {self.dateend.year} - Month: {self.dateend.month} - Day: {self.dateend.day}')
 
-# runno
-Engine.run()
+    def consolidate(self):
+        for pair in self.pairs:
+            candle = self.datareader.readnext(self.datecurrent, pair)
 
-# aggiungo algoritmo
-# aggiungo outputs
+            for consolidator in self.consolidators[pair]:
+                consolidator.addcandle(candle)
 
-# fine
+        self.datecurrent += datetime.timedelta(0, 60)
+
+    def signal(self, type, pair, price):
+
+        # creo un signal e lo aggiungo alla lista
+        signal = Signal(type, pair, price)
+        self.addsignal(signal)
+
+    def run(self):
+        # carico tutte le candele ?
+        self.datareader.loadhistory(self.consolidators, self.datestart, self.dateend)
+
+        while self.datecurrent < self.dateend:
+            self.consolidate()
