@@ -29,11 +29,11 @@ class Candle:
 
         first = 0
         last = len(serie) - 1
-
+        
         self.tf = timeframe
         self.pair = serie[first].pair
         self.date = serie[first].date
-        self.dateend = serie[last].date + datetime.timedelta(seconds=60)
+        self.dateend = serie[last].date
         self.open = 0
         self.high = 0
         self.low = 0

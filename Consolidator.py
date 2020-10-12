@@ -30,6 +30,3 @@ class Consolidator:
 
             # cancello serie candele
             self.candleserie = []
-
-    def processcandle(self):
-        pass

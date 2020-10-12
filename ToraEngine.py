@@ -1,9 +1,12 @@
 import datetime
+import time
+
 import Utilities
 from Algorithm import Algorithm
 from Candle import Candle
 from Consolidator import Consolidator
 from DataReaderFxcm import DataReaderFxcm
+from ProgressBar import printProgressBar
 from Signal import Signal
 from TimeFrame import TimeFrame
 
@@ -45,7 +48,6 @@ class ToraEngine:
         self.consolidators[pair].append(Consolidator(pair, timeframe, callback))
 
     def addtohistory(self, candle: Candle):
-
         # verifico se esiste il pair
         if candle.pair not in self.history:
             self.history.setdefault(candle.pair, {})
@@ -63,7 +65,7 @@ class ToraEngine:
             self.addconsolidator(pair, tf, self.addtohistory)
 
     def addsignal(self, signal: Signal):
-        self.signals.append(signal)
+        self.signals.insert(0, signal)
 
     def setcomputingdates(self, start: datetime, end: datetime):
         self.datestart = Utilities.stringtotime(start)
@@ -92,5 +94,14 @@ class ToraEngine:
         # carico tutte le candele ?
         self.datareader.loadhistory(self.consolidators, self.datestart, self.dateend)
 
+        dayscurrent = 0
+        daystotal = self.dateend - self.datecurrent
+        daystotal = daystotal.days
+
         while self.datecurrent < self.dateend:
             self.consolidate()
+
+            dayscurrent = self.datecurrent - self.datestart
+            dayscurrent = dayscurrent.days
+
+            printProgressBar(dayscurrent, daystotal)

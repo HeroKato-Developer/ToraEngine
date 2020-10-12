@@ -6,21 +6,23 @@ from unicodedata import decimal
 from zipfile import ZipFile, BadZipFile
 
 from Candle import Candle
+from ProgressBar import printProgressBar
 
 
 class DataReader:
 
     def __init__(self):
-        self.data = dict()
+        self.data = {}
 
-    def test(self):
-        print(f'Im DataReader')
-
-    def loadhistory(self, consolidators, datestart: datetime, dateend: datetime):
+    def loadhistory(self, consolidators, datestart: datetime.datetime, dateend: datetime.datetime):
         for pair in consolidators:
             # verifico che non ci sia gia in quelli caricati
             if pair in self.data:
                 continue
+
+            datadiff = dateend - datestart
+            daystotal = datadiff.days
+            dayscurrent = 0
 
             path = f'../Polygon/Lean/Data/forex/fxcm/minute/{pair}/'
 
@@ -30,7 +32,9 @@ class DataReader:
             while datecurrent < dateend:
                 self.loadfromzip(datecurrent, path, pair)
                 datecurrent += datetime.timedelta(1)
+                dayscurrent += 1
 
+                printProgressBar(dayscurrent, daystotal)
             print(f'Finished loading history for {pair}')
 
     def loadfromzip(self, datecurrent: datetime, path: str, pair: str):
@@ -62,6 +66,7 @@ class DataReader:
             pass
 
     def readnext(self, date: datetime, pair: str):
+
         if date not in self.data[pair]:
             # print(f'Void Candle - Date {date} does NOT exist in {pair}')
             candle = Candle()
@@ -78,11 +83,12 @@ class DataReader:
     def loadminutes(self, csv, pair, datecurrent: datetime):
 
         for row in csv:
+            candle = self.loadcandle(row, pair, datecurrent)
+
             if pair not in self.data:
                 self.data.setdefault(pair, {})
-                self.data[pair].setdefault(datecurrent, None)
+                self.data[pair].setdefault(candle.date, None)
 
-            candle = self.loadcandle(row, pair, datecurrent)
             self.data[pair][candle.date] = candle
 
     def loadcandle(self, row, pair: str, datecurrent: datetime):
@@ -115,50 +121,42 @@ class DataReader:
         # return candle to be added to history
         return candle
 
+    def loadcandle_new(self, date, pair):
+        path = f'../Polygon/Lean/Data/forex/fxcm/minute/{pair}/'
+        file = self.generatepath(date, path)
 
-'''
-        # Imports
-        import time
-        from io import StringIO
-        from zipfile import ZipFile
-        from zipfile import BadZipFile
-        import csv
-        import os
-        import glob
+        # carico il file del giorno e lo aggiungo
+        try:
+            with ZipFile(file, 'r') as zip:
+                for zipfile in zip.namelist():
+                    # print(f'Reading file in zip: {zipfile}')
+                    datazip = zip.read(zipfile)
+                    datalines = datazip.decode("utf-8")
+                    datalines = datalines.splitlines()
 
-        # Variables Global
-        PATHDATA = '../Polygon/Lean/Data/forex/fxcm/minute/eurusd/'
+                    csv_reader = csv.reader(datalines, delimiter=',')
+                    csv_parsed = list(csv_reader)
 
-        files = glob.glob(PATHDATA + '*.zip')
+                    # csv_parsed è la lista di tutte le candele con i propri campi
+                    # carico tutte le candele da m1
+                    return self.loadminute_new(csv_parsed, pair, date)
 
-        for file in files:
-            print(file)
+        except FileNotFoundError:
+            # print(f'File Non Esistente - {file}')
+            pass
 
-            try:
-                with ZipFile(file, 'r') as zip:
+        except BadZipFile:
+            # print(f'Zip Errore, impossibile aprire')
+            pass
 
-                    zip.printdir()
+    def loadminute_new(self, csv, pair, date: datetime.datetime):
 
-                    for zipfile in zip.namelist():
+        datedefault = date.replace(hour=0, minute=0)
 
-                        print(f'Reading file in zip: {zipfile}')
-                        datazip = zip.read(zipfile)
-                        datalines = datazip.decode("utf-8")
-                        datalines = datalines.splitlines()
-                        print(f'Data Read From file: {zipfile}')
+        for row in csv:
 
-                        print(f'Example:')
-                        csv_reader = csv.reader(datalines, delimiter=',')
-                        csv_parsed = list(csv_reader)
-                        print(csv_parsed)
+            if datedefault + datetime.timedelta(milliseconds=int(row[0])) != date:
+                continue
 
-                        for row in datalines:
-                            print(row)
-
-                    print('Done Reading Zip!')
-                    time.sleep(1)
-
-            except BadZipFile:
-                print('Zip Errore')
-                time.sleep(20)
-'''
+            candle = self.loadcandle(row, pair, date)
+            return candle
