@@ -11,8 +11,9 @@ class Algorithm:
         self.initialize()
 
     def initialize(self):
-        self.engine.setcomputingdates('2007/01/01', '2021/01/01')
+        self.engine.setcomputingdates('2019/06/01', '2021/01/01')
         self.engine.addconsolidator('EURUSD', TimeFrame.M15, self.onconsolidate)
+        #self.engine.addconsolidator('USDJPY', TimeFrame.M15, self.onconsolidate)
 
     def onconsolidate(self, candle: Candle):
         # print(f'Event On Consolidate - {candle.tostring()}')

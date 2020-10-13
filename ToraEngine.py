@@ -6,7 +6,7 @@ from Algorithm import Algorithm
 from Candle import Candle
 from Consolidator import Consolidator
 from DataReaderFxcm import DataReaderFxcm
-from ProgressBar import printProgressBar
+from ProgressBar import progressbar
 from Signal import Signal
 from TimeFrame import TimeFrame
 
@@ -42,7 +42,7 @@ class ToraEngine:
             self.pairs.append(pair)
             self.addrollingwindow(pair)
 
-        if len(self.consolidators) == 0:
+        if pair not in self.consolidators:
             self.consolidators.setdefault(pair, [])
 
         self.consolidators[pair].append(Consolidator(pair, timeframe, callback))
@@ -104,4 +104,6 @@ class ToraEngine:
             dayscurrent = self.datecurrent - self.datestart
             dayscurrent = dayscurrent.days
 
-            printProgressBar(dayscurrent, daystotal, 'Calculating Algorithm: ')
+            progressbar(dayscurrent, daystotal, 'Calculating Algorithm: ')
+
+        print(f'Finished Calculating Signals')

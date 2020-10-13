@@ -11,48 +11,44 @@ from zipfile import ZipFile, BadZipFile
 from numpy import NaN
 
 from Candle import Candle
-from ProgressBar import printProgressBar
+from ProgressBar import progressbar
 
 
 class DataReader:
 
     def __init__(self):
         self.data = {}
-        self.dataframe = pd.DataFrame()
-        self.dataframes = []
         self.path = '../Polygon/Lean/Data/forex/fxcm/minute/'
 
     def loadhistory(self, consolidators, datestart: datetime.datetime, dateend: datetime.datetime):
+
         for pair in consolidators:
             # verifico che non ci sia gia in quelli caricati
             if pair in self.data:
                 continue
-
-            datadiff = dateend - datestart
-            daystotal = datadiff.days
-            dayscurrent = 0
+            else:
+                self.data.setdefault(pair, pd.DataFrame())
 
             relpath = f'{self.path}{pair}/'
 
             # inizio il ciclo di caricamento partendo dall inizio
             datecurrent = datestart
+            datadiff = dateend - datestart
+            daystotal = datadiff.days
+            dayscurrent = 0
+
+            dataframes = []
 
             while datecurrent < dateend:
-                self.loadfromzip(datecurrent, relpath, pair)
+                df = self.loadfromzip(datecurrent, relpath, pair)
+                if df is not None:
+                    dataframes.append(df)
+
                 datecurrent += datetime.timedelta(1)
                 dayscurrent += 1
-                printProgressBar(dayscurrent, daystotal, f'Loading {pair} History {datecurrent}: ')
+                progressbar(dayscurrent, daystotal, f'Loading {pair} History {datecurrent}: ')
 
-            print(f'Merging DataFrame for {pair}')
-            self.dataframe = self.dataframe.append(self.dataframes)
-            self.dataframes = None
-            print(f'Finished Merging DataFrame for {pair}')
-
-            #for count in range(0, len(self.dataframes)):
-            #    self.dataframe = self.dataframe.append(self.dataframes[count])
-
-            #    if count % 10 == 0:
-             #       printProgressBar(count, len(self.dataframes), f'Merging DataFrames: ')
+            self.data[pair] = self.data[pair].append(dataframes)
 
     def loadfromzip(self, datecurrent: datetime, path: str, pair: str):
 
@@ -76,8 +72,8 @@ class DataReader:
                                      date_parser=convert)
 
                     # print(df)
+                    return df
 
-                    self.dataframes.append(df)
                     # self.dataframe = pd.concat([self.dataframe, df])
 
                     # csv_reader = csv.reader(datalines, delimiter=',')
@@ -95,17 +91,18 @@ class DataReader:
             # print(f'Zip Errore, impossibile aprire')
             pass
 
-    def readnext(self, date: datetime, pair: str):
+    def readnext(self, date: datetime.datetime, pair: str):
 
-        if date not in self.data[pair]:
-            # print(f'Void Candle - Date {date} does NOT exist in {pair}')
-            candle = Candle()
+        candle = Candle()
+        if date not in self.data[pair].index:
             candle.pair = pair
             candle.date = date
             return candle
 
-        # recupero la candela
-        return self.data[pair][date]
+        # recupero e creo la candela
+        #return self.data[pair][date]
+        candle = self.loadcandle(self.data[pair][date],pair,date)
+        return Candle(self.data[pair][date])
 
     def generatepath(self, datecurrent: datetime, path: str):
         return path + datecurrent.strftime('%Y%m%d') + '_quote.zip'
