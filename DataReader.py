@@ -43,12 +43,10 @@ class DataReader:
                 dayscurrent += 1
                 printProgressBar(dayscurrent, daystotal, f'Loading {pair} History {datecurrent}: ')
 
+            print(f'Merging DataFrame for {pair}')
             self.dataframe = self.dataframe.append(self.dataframes)
-            print(self.dataframe)
-
-            duplicateRowsDF = self.dataframe[self.dataframe.duplicated()]
-            print('Duplicated Rows:')
-            print(duplicateRowsDF)
+            self.dataframes = None
+            print(f'Finished Merging DataFrame for {pair}')
 
             #for count in range(0, len(self.dataframes)):
             #    self.dataframe = self.dataframe.append(self.dataframes[count])
@@ -78,12 +76,6 @@ class DataReader:
                                      date_parser=convert)
 
                     # print(df)
-
-                    for dt in df.values:
-                        for val in dt:
-                            if val is NaN:
-                                print('NaN found!')
-
 
                     self.dataframes.append(df)
                     # self.dataframe = pd.concat([self.dataframe, df])
@@ -127,7 +119,7 @@ class DataReader:
                 self.data.setdefault(pair, {})
                 self.data[pair].setdefault(candle.date, None)
 
-            # self.data[pair][candle.date] = candle
+            self.data[pair][candle.date] = candle
 
     def loadcandle(self, row, pair: str, datecurrent: datetime):
 
