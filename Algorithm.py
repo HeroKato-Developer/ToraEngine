@@ -11,11 +11,11 @@ class Algorithm:
         self.initialize()
 
     def initialize(self):
-        self.engine.setcomputingdates('2019/01/01', '2020/01/01')
+        self.engine.setcomputingdates('2007/01/01', '2021/01/01')
         self.engine.addconsolidator('EURUSD', TimeFrame.M15, self.onconsolidate)
 
     def onconsolidate(self, candle: Candle):
-        #print(f'Event On Consolidate - {candle.tostring()}')
+        # print(f'Event On Consolidate - {candle.tostring()}')
 
         self.countsignal += 1
         if self.countsignal >= 50:

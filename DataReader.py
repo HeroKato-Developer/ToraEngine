@@ -1,9 +1,14 @@
 import csv
 import datetime
 import time
+from io import StringIO
+
+import pandas as pd
 from decimal import Decimal, getcontext
 from unicodedata import decimal
 from zipfile import ZipFile, BadZipFile
+
+from numpy import NaN
 
 from Candle import Candle
 from ProgressBar import printProgressBar
@@ -13,6 +18,9 @@ class DataReader:
 
     def __init__(self):
         self.data = {}
+        self.dataframe = pd.DataFrame()
+        self.dataframes = []
+        self.path = '../Polygon/Lean/Data/forex/fxcm/minute/'
 
     def loadhistory(self, consolidators, datestart: datetime.datetime, dateend: datetime.datetime):
         for pair in consolidators:
@@ -24,18 +32,29 @@ class DataReader:
             daystotal = datadiff.days
             dayscurrent = 0
 
-            path = f'../Polygon/Lean/Data/forex/fxcm/minute/{pair}/'
+            relpath = f'{self.path}{pair}/'
 
             # inizio il ciclo di caricamento partendo dall inizio
             datecurrent = datestart
 
             while datecurrent < dateend:
-                self.loadfromzip(datecurrent, path, pair)
+                self.loadfromzip(datecurrent, relpath, pair)
                 datecurrent += datetime.timedelta(1)
                 dayscurrent += 1
+                printProgressBar(dayscurrent, daystotal, f'Loading {pair} History {datecurrent}: ')
 
-                printProgressBar(dayscurrent, daystotal)
-            print(f'Finished loading history for {pair}')
+            self.dataframe = self.dataframe.append(self.dataframes)
+            print(self.dataframe)
+
+            duplicateRowsDF = self.dataframe[self.dataframe.duplicated()]
+            print('Duplicated Rows:')
+            print(duplicateRowsDF)
+
+            #for count in range(0, len(self.dataframes)):
+            #    self.dataframe = self.dataframe.append(self.dataframes[count])
+
+            #    if count % 10 == 0:
+             #       printProgressBar(count, len(self.dataframes), f'Merging DataFrames: ')
 
     def loadfromzip(self, datecurrent: datetime, path: str, pair: str):
 
@@ -48,14 +67,33 @@ class DataReader:
                     # print(f'Reading file in zip: {zipfile}')
                     datazip = zip.read(zipfile)
                     datalines = datazip.decode("utf-8")
-                    datalines = datalines.splitlines()
+                    # datalines = datalines.splitlines()
 
-                    csv_reader = csv.reader(datalines, delimiter=',')
-                    csv_parsed = list(csv_reader)
+                    convert = lambda x: datecurrent + datetime.timedelta(milliseconds=int(x))
+                    df = pd.read_csv(StringIO(datalines),
+                                     header=None,
+                                     index_col=0,
+                                     names=['Time', 'Ob', 'Hb', 'Lb', 'Cb', 'Sb', 'Oa', 'Ha', 'La', 'Ca', 'Sa'],
+                                     parse_dates=['Time'],
+                                     date_parser=convert)
+
+                    # print(df)
+
+                    for dt in df.values:
+                        for val in dt:
+                            if val is NaN:
+                                print('NaN found!')
+
+
+                    self.dataframes.append(df)
+                    # self.dataframe = pd.concat([self.dataframe, df])
+
+                    # csv_reader = csv.reader(datalines, delimiter=',')
+                    # csv_parsed = list(csv_reader)
 
                     # csv_parsed è la lista di tutte le candele con i propri campi
                     # carico tutte le candele da m1
-                    self.loadminutes(csv_parsed, pair, datecurrent)
+                    # self.loadminutes(csv_parsed, pair, datecurrent)
 
         except FileNotFoundError:
             # print(f'File Non Esistente - {file}')
@@ -89,7 +127,7 @@ class DataReader:
                 self.data.setdefault(pair, {})
                 self.data[pair].setdefault(candle.date, None)
 
-            self.data[pair][candle.date] = candle
+            # self.data[pair][candle.date] = candle
 
     def loadcandle(self, row, pair: str, datecurrent: datetime):
 
@@ -122,8 +160,8 @@ class DataReader:
         return candle
 
     def loadcandle_new(self, date, pair):
-        path = f'../Polygon/Lean/Data/forex/fxcm/minute/{pair}/'
-        file = self.generatepath(date, path)
+        relpath = f'{self.path}{pair}/'
+        file = self.generatepath(date, relpath)
 
         # carico il file del giorno e lo aggiungo
         try:

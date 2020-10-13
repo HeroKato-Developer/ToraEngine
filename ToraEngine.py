@@ -104,4 +104,4 @@ class ToraEngine:
             dayscurrent = self.datecurrent - self.datestart
             dayscurrent = dayscurrent.days
 
-            printProgressBar(dayscurrent, daystotal)
+            printProgressBar(dayscurrent, daystotal, 'Calculating Algorithm: ')
