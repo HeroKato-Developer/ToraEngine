@@ -11,7 +11,7 @@ class Algorithm:
         self.initialize()
 
     def initialize(self):
-        self.engine.setcomputingdates('2019/06/01', '2021/01/01')
+        self.engine.setcomputingdates('2019/10/29', '2020/01/01')
         self.engine.addconsolidator('EURUSD', TimeFrame.M15, self.onconsolidate)
         #self.engine.addconsolidator('USDJPY', TimeFrame.M15, self.onconsolidate)
 
@@ -19,6 +19,6 @@ class Algorithm:
         # print(f'Event On Consolidate - {candle.tostring()}')
 
         self.countsignal += 1
-        if self.countsignal >= 50:
+        if self.countsignal >= 60:
             self.countsignal = 0
-            self.engine.signal(OrderType.Buy, candle.pair, candle.close)
+            self.engine.signal(OrderType.Buy, candle.pair, candle.close, candle.dateend)

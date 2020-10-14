@@ -15,19 +15,7 @@ class Candle:
         self.size = 0
         self.tf = 0
 
-    def __init__(self, data):
-        pass
-
     def set(self, pair, date, open, high, low, close, size):
-        self.pair = pair
-        self.date = date
-        self.open = open
-        self.high = high
-        self.low = low
-        self.close = close
-        self.size = size
-
-    def set(self, pair, date, df):
         self.pair = pair
         self.date = date
         self.open = open
@@ -45,7 +33,7 @@ class Candle:
         self.tf = timeframe
         self.pair = serie[first].pair
         self.date = serie[first].date
-        self.dateend = serie[last].date
+        self.dateend = serie[last].date + datetime.timedelta(seconds=60)
         self.open = 0
         self.high = 0
         self.low = 0

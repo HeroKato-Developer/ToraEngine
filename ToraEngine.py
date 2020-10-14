@@ -1,13 +1,13 @@
 import datetime
-import time
-
 import Utilities
+from multiprocessing import Process
 from Algorithm import Algorithm
 from Candle import Candle
 from Consolidator import Consolidator
 from DataReaderFxcm import DataReaderFxcm
 from ProgressBar import progressbar
 from Signal import Signal
+import Statistics
 from TimeFrame import TimeFrame
 
 
@@ -84,13 +84,13 @@ class ToraEngine:
 
         self.datecurrent += datetime.timedelta(0, 60)
 
-    def signal(self, type, pair, price):
+    def signal(self, type, pair, price, date):
 
         # creo un signal e lo aggiungo alla lista
-        signal = Signal(type, pair, price)
+        signal = Signal(type, pair, price, date)
         self.addsignal(signal)
 
-    def run(self):
+    def start(self):
         # carico tutte le candele ?
         self.datareader.loadhistory(self.consolidators, self.datestart, self.dateend)
 
@@ -104,6 +104,16 @@ class ToraEngine:
             dayscurrent = self.datecurrent - self.datestart
             dayscurrent = dayscurrent.days
 
-            progressbar(dayscurrent, daystotal, 'Calculating Algorithm: ')
+            progressbar(dayscurrent, daystotal, 'Calculating Algorithm: ', f'Current Date: {self.datecurrent}')
 
-        print(f'Finished Calculating Signals')
+        # creo processi che vanno a calcolare i segnali
+        self.statistics()
+
+    def statistics(self):
+        p = Process(target=Statistics.generatestatistics,
+                    args=(self.history, self.signals, self.algorithm, self.onstatisticscomplete))
+        p.start()
+        p.join()
+
+    def onstatisticscomplete(self, var):
+        print(var)

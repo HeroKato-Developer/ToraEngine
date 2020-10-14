@@ -99,10 +99,7 @@ class DataReader:
             candle.date = date
             return candle
 
-        # recupero e creo la candela
-        #return self.data[pair][date]
-        candle = self.loadcandle(self.data[pair][date],pair,date)
-        return Candle(self.data[pair][date])
+        return self.loadcandle(self.data[pair].loc[date, :],pair,date)
 
     def generatepath(self, datecurrent: datetime, path: str):
         return path + datecurrent.strftime('%Y%m%d') + '_quote.zip'
@@ -126,20 +123,21 @@ class DataReader:
 
         # Digits conversion
         # https://stackoverflow.com/questions/6189956/easy-way-of-finding-decimal-places
-        digits = abs(Decimal(row[1]).as_tuple().exponent)
+        digits = abs(Decimal(row[0]).as_tuple().exponent)
 
         # Digits precision
         # https://gist.github.com/jackiekazil/6201722
         getcontext().prec = digits + 1
 
-        milliseconds = int(row[0])
-        open = (Decimal(row[1]) + Decimal(row[6])) * Decimal('0.5')
-        high = (Decimal(row[2]) + Decimal(row[7])) * Decimal('0.5')
-        low = (Decimal(row[3]) + Decimal(row[8])) * Decimal('0.5')
-        close = (Decimal(row[4]) + Decimal(row[9])) * Decimal('0.5')
-        size = (Decimal(row[5]) + Decimal(row[10])) * Decimal('0.5')
+        #milliseconds = int(row[0])
+        open = (Decimal(row[0]) + Decimal(row[5])) * Decimal('0.5')
+        high = (Decimal(row[1]) + Decimal(row[6])) * Decimal('0.5')
+        low = (Decimal(row[2]) + Decimal(row[7])) * Decimal('0.5')
+        close = (Decimal(row[3]) + Decimal(row[8])) * Decimal('0.5')
+        size = (Decimal(row[4]) + Decimal(row[9])) * Decimal('0.5')
 
-        date = datecurrent + datetime.timedelta(0, 0, 0, milliseconds)
+        date = datecurrent
+        # date = datecurrent + datetime.timedelta(0, 0, 0, milliseconds)
         # datestr = date.strftime('%Y-%m-%d %H:%M:%S')
 
         candle = Candle()

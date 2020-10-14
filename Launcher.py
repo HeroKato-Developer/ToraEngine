@@ -1,17 +1,10 @@
-# creo engine
-
 from Algorithm import Algorithm
 from ToraEngine import ToraEngine
 
-Engine = ToraEngine()
-
-# aggiungo algoritmo
-Engine.addalgorithm(Algorithm)
-
-# runno
-Engine.run()
-
-# aggiungo algoritmo
-# aggiungo outputs
-
-# fine
+Engine = None
+if __name__ == '__main__':
+    Engine = ToraEngine()
+    Engine.addalgorithm(Algorithm)
+    Engine.start()
+else:
+    print(Engine)
