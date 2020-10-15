@@ -6,5 +6,3 @@ if __name__ == '__main__':
     Engine = ToraEngine()
     Engine.addalgorithm(Algorithm)
     Engine.start()
-else:
-    print(Engine)

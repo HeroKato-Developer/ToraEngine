@@ -11,7 +11,7 @@ class Algorithm:
         self.initialize()
 
     def initialize(self):
-        self.engine.setcomputingdates('2019/10/29', '2020/01/01')
+        self.engine.setcomputingdates('2019/10/29', '2019/11/01')
         self.engine.addconsolidator('EURUSD', TimeFrame.M15, self.onconsolidate)
         #self.engine.addconsolidator('USDJPY', TimeFrame.M15, self.onconsolidate)
 

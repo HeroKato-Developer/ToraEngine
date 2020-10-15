@@ -1,6 +1,6 @@
 import datetime
 import Utilities
-from multiprocessing import Process
+from multiprocessing import Process, Pool
 from Algorithm import Algorithm
 from Candle import Candle
 from Consolidator import Consolidator
@@ -110,10 +110,33 @@ class ToraEngine:
         self.statistics()
 
     def statistics(self):
-        p = Process(target=Statistics.generatestatistics,
-                    args=(self.history, self.signals, self.algorithm, self.onstatisticscomplete))
-        p.start()
-        p.join()
+
+        # start 4 worker processes
+        with Pool(processes=None) as pool:
+
+            arguments = [1, self.callbacksingle]
+            groupings = [(arguments) for i in range(0, 4)]
+            processses = pool.starmap_async(Statistics.generatestatistics_2, groupings,
+                                            callback=self.callback).get()
+
+            print(processses)
+        print('PoolClosed?')
+
+            #pool.terminate()
+            # multiple_results = [pool.apply_async(Statistics.generatestatistics_2, (self.callback)) for i in range(10)]
+            # [res.get() for res in multiple_results]
+
+        # p = Process(target=Statistics.generatestatistics,
+        #            args=(self.history, self.signals, self.algorithm, self.onstatisticscomplete))
+        # p.start()
+        # p.join()
+
+    def callbacksingle(self, number):
+        print(f'Processo Finito: {number}')
+
+    def callback(self, count):
+        print('Callback!!')
+        #self.statistics()
 
     def onstatisticscomplete(self, var):
         print(var)
