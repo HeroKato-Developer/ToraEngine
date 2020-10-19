@@ -1,0 +1,67 @@
+{
+  "SYMBOL": {
+    "ID": "SYMBOL",
+    "Minimum": "",
+    "Maximum": "",
+    "Step": "",
+    "Current": "GBPJPY"
+  },
+  "NAME": {
+    "ID": "STRATEGY",
+    "Minimum": "",
+    "Maximum": "",
+    "Step": "",
+    "Current": "ENGULFING"
+  },
+  "TIMEFRAME": {
+    "ID": "TIMEFRAME",
+    "Minimum": "",
+    "Maximum": "",
+    "Step": "",
+    "Current": "1.00:00:00"
+  },
+  "DATE_START": {
+    "ID": "DATE_START",
+    "Minimum": "",
+    "Maximum": "",
+    "Step": "",
+    "Current": "01/01/2007"
+  },
+  "DATE_END": {
+    "ID": "DATE_END",
+    "Minimum": "",
+    "Maximum": "",
+    "Step": "",
+    "Current": "30/06/2020"
+  },
+  "PARAMETERS": [
+    {
+      "ID": "TAKEPROFIT",
+      "Minimum": 0.2,
+      "Maximum": 4,
+      "Step": 0.2,
+      "Current": 0.2
+    },
+    {
+      "ID": "STOPLOSS",
+      "Minimum": 0.2,
+      "Maximum": 4,
+      "Step": 0.2,
+      "Current": 0.2
+    },
+    {
+      "ID": "PIPS",
+      "Minimum": 10,
+      "Maximum": 40,
+      "Step": 10,
+      "Current": 10
+    },
+    {
+      "ID": "PIPS_VARIATION",
+      "Minimum": 0.2,
+      "Maximum": 0.8,
+      "Step": 0.2,
+      "Current": 0.2
+    }
+  ]
+}

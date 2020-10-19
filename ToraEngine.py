@@ -1,4 +1,7 @@
 import datetime
+import json
+
+import Parameters
 import Utilities
 from multiprocessing import Process, Pool
 from Algorithm import Algorithm
@@ -84,10 +87,10 @@ class ToraEngine:
 
         self.datecurrent += datetime.timedelta(0, 60)
 
-    def signal(self, type, pair, price, date):
+    def signal(self, type, pair, candle):
 
         # creo un signal e lo aggiungo alla lista
-        signal = Signal(type, pair, price, date)
+        signal = Signal(type, pair, candle)
         self.addsignal(signal)
 
     def start(self):
@@ -107,36 +110,10 @@ class ToraEngine:
             progressbar(dayscurrent, daystotal, 'Calculating Algorithm: ', f'Current Date: {self.datecurrent}')
 
         # creo processi che vanno a calcolare i segnali
-        self.statistics()
+        Statistics.generatestatistics(self, self.history, self.signals, self.algorithm)
 
-    def statistics(self):
 
-        # start 4 worker processes
-        with Pool(processes=None) as pool:
-
-            arguments = [1, self.callbacksingle]
-            groupings = [(arguments) for i in range(0, 4)]
-            processses = pool.starmap_async(Statistics.generatestatistics_2, groupings,
-                                            callback=self.callback).get()
-
-            print(processses)
-        print('PoolClosed?')
-
-            #pool.terminate()
-            # multiple_results = [pool.apply_async(Statistics.generatestatistics_2, (self.callback)) for i in range(10)]
-            # [res.get() for res in multiple_results]
-
-        # p = Process(target=Statistics.generatestatistics,
-        #            args=(self.history, self.signals, self.algorithm, self.onstatisticscomplete))
-        # p.start()
-        # p.join()
-
-    def callbacksingle(self, number):
-        print(f'Processo Finito: {number}')
 
     def callback(self, count):
         print('Callback!!')
         #self.statistics()
-
-    def onstatisticscomplete(self, var):
-        print(var)
